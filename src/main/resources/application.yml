@@ -1,0 +1,78 @@
+droneguard:
+  model: models/best.onnx
+  # 0 = default webcam; or file path; or RTSP URL like rtsp://user:pass@ip/stream
+  source: "drone_footage.mov"
+  imgsz: 128
+  conf-thres: 0.7
+  iou-thres: 0.45
+  labels:
+    - uav # adjust if you trained multiple classes
+
+server:
+  port: 8080
+  tomcat:
+    connection-timeout: -1 # 300000 # 5 minutes
+    keep-alive-timeout: -1 # 300000 # 5 minutes
+    max-keep-alive-requests: -1 # Unlimited
+    max-connections: 200
+    max-threads: 20
+    max-http-header-size: 65536
+    max-swallow-size: -1
+    processor-cache: 200
+    # Additional settings for better streaming
+    accept-count: 100
+    min-spare-threads: 5
+    max-spare-threads: 10
+  compression:
+    enabled: false # Disable compression for streaming
+  # Add HTTP/2 support for better streaming
+  http2:
+    enabled: true
+
+spring:
+  mvc:
+    async:
+      request-timeout: 300000 # 5 minutes
+    # Disable content negotiation for streaming endpoints
+    contentnegotiation:
+      favor-parameter: false
+      favor-path-extension: false
+  http:
+    multipart:
+      enabled: false
+  web:
+    resources:
+      cache:
+        period: 0
+      # Disable static resource handling for streaming paths
+      static-locations: classpath:/static/
+  # Add servlet configuration for streaming
+  servlet:
+    multipart:
+      enabled: false
+    # Large file upload settings (if needed)
+    max-file-size: 100MB
+    max-request-size: 100MB
+
+# JVM settings for better memory management
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.example.droneguard: DEBUG
+    org.springframework.web: DEBUG
+    # Reduce OpenCV logging noise
+    org.opencv: WARN
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/droneguard.log
+    max-size: 10MB
+    max-history: 5

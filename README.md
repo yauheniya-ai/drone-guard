@@ -54,7 +54,7 @@ mvn clean spring-boot:run
 
 ## License
 
-MIT
+MIT License
 
 ## Acknowledgments
 
